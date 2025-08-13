@@ -1,7 +1,7 @@
 import { CiMail, CiLock, CiUser, CiFacebook, CiInstagram, CiTwitter } from "react-icons/ci";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
 import { useState, useEffect, useRef } from "react";
 import { auth } from "../../firebase/module";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { animate } from "animejs";
 import Input from "../components/auth/Input";
 export default function Home() {
@@ -16,27 +16,38 @@ export default function Home() {
     const handlerAuthentication = async (e) => {
         e.preventDefault();
         try {
-            if (register) {
-                if (!check) {
-                    setMsgErr(<p className="text-red-500">You must accept the terms & conditions.</p>);
-                    return;
-                }
-                else if (username === "") {
-                    setMsgErr(<p className="text-red-500">Please type your username.</p>);
-                    return;
-                }
-                await createUserWithEmailAndPassword(auth, email, password);
-                setMsgErr(<p className="text-green-500">Register Successfully! Please wait until its close.</p>);
-                setTimeout(() => {
-                    setRegister(!register);
-                    setMsgErr(null);
-                }, 1000);
+            if (recover) {
+                await sendPasswordResetEmail(auth, email);
+                setMsgErr(<p className="text-green-500">Password reset email sent! Check your inbox.</p>);
             } else {
-                await signInWithEmailAndPassword(auth, email, password);
+                if (register) {
+                    if (!check) {
+                        setMsgErr(<p className="text-red-500">You must accept the terms & conditions.</p>);
+                        return;
+                    }
+                    else if (username === "") {
+                        setMsgErr(<p className="text-red-500">Please type your username.</p>);
+                        return;
+                    }
+                    await createUserWithEmailAndPassword(auth, email, password);
+                    setMsgErr(<p className="text-green-500">Register Successfully! Please wait until its close.</p>);
+                    setTimeout(() => {
+                        setRegister(!register);
+                        setMsgErr(null);
+                    }, 1000);
+                } else {
+                    await signInWithEmailAndPassword(auth, email, password);
+                }
             }
         } catch (error) {
             setMsgErr(<p className="text-red-500">{error.message}</p>);
         }
+    }
+    const clear = () => {
+        setMsgErr(null);
+        setUsername('');
+        setEmail('');
+        setPassword('');
     }
     useEffect(() => {
         document.title = "Authentication";
@@ -51,9 +62,9 @@ export default function Home() {
     return (
         <div className="min-h-screen flex items-center justify-between flex-col text-sm sm:text-base md:text-md lg:text-lg text-gray-700">
             <div className="flex flex-1 items-center justify-center w-full px-3 overflow-hidden">
-                <form key={`${register}-${recover}`} ref={slide} className="shadow p-5 border border-gray-300 rounded-lg w-100" onSubmit={handlerAuthentication}>
+                <form ref={slide} className="shadow p-5 border border-gray-300 rounded-lg w-100" onSubmit={handlerAuthentication}>
                     {recover ? (
-                        <>
+                        <>  
                             <h1 className="font-semibold text-xl md:text-2xl lg:text-3xl">
                                 Forgot Password
                             </h1>
@@ -68,10 +79,17 @@ export default function Home() {
                                 func={setEmail}
                                 isRequired
                             />
+                            {msgerr}
                             <button type="submit" className="w-full bg-green-400 hover:bg-green-500 focus:bg-green-500 text-white p-2 rounded-md mt-3">
                                 Submit
                             </button>
-                            <button type="button" className="w-full bg-blue-400 hover:bg-blue-500 focus:bg-blue-500 text-white p-2 rounded-md mt-3" onClick={() => setRecover(!recover)}>
+                            <button
+                                className="w-full bg-blue-400 hover:bg-blue-500 focus:bg-blue-500 text-white p-2 rounded-md mt-3"
+                                type="button"
+                                onClick={() => {
+                                    setRecover(!recover);
+                                    clear();
+                                }}>
                                 Back
                             </button>
                         </>
@@ -134,16 +152,19 @@ export default function Home() {
                                         type="button"
                                         onClick={() => {
                                             setRegister(!register);
-                                            setMsgErr(null);
-                                            setUsername('');
-                                            setEmail('');
-                                            setPassword('');
+                                            clear();
                                         }}>
                                         Create New Account
                                     </button>
                                 </div>
                             ) : (
-                                <button type="button" className="w-full bg-blue-400 hover:bg-blue-500 focus:bg-blue-500 text-white p-2 rounded-md mt-3" onClick={() => setRegister(!register)}>
+                                <button
+                                    className="w-full bg-blue-400 hover:bg-blue-500 focus:bg-blue-500 text-white p-2 rounded-md mt-3"
+                                    type="button"
+                                    onClick={() => {
+                                        setRegister(!register);
+                                        clear();
+                                    }}>
                                     Back
                                 </button>
                             )}
