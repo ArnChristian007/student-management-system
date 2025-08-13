@@ -1,10 +1,11 @@
 import { CiMail, CiLock, CiUser, CiFacebook, CiInstagram, CiTwitter } from "react-icons/ci";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
 import { useState, useEffect, useRef } from "react";
-import { auth } from "../../firebase/module";
+import { auth } from "../../../firebase/module";
 import { animate } from "animejs";
-import Input from "../components/auth/Input";
-export default function Home() {
+import { useNavigate } from "react-router-dom";
+import Input from "../../components/auth/Input";
+export default function Authentication() {
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -13,6 +14,7 @@ export default function Home() {
     const [recover, setRecover] = useState(false);
     const [msgerr, setMsgErr] = useState(null);
     const slide = useRef(null);
+    const navigate = useNavigate();
     const handlerAuthentication = async (e) => {
         e.preventDefault();
         try {
@@ -37,6 +39,7 @@ export default function Home() {
                     }, 1000);
                 } else {
                     await signInWithEmailAndPassword(auth, email, password);
+                    navigate("/dashboard");
                 }
             }
         } catch (error) {
@@ -51,6 +54,8 @@ export default function Home() {
     }
     useEffect(() => {
         document.title = "Authentication";
+    }, [])
+    useEffect(() => {
         if (!slide.current) return;
         animate(slide.current, {
             opacity: [0, 1],

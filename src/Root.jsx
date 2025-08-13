@@ -1,17 +1,13 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter } from "react-router-dom";
 import { createRoot } from "react-dom/client";
-import Home from "./routes/Home";
+import AuthProvider from "./routes/AuthProvider";
+import App from "./routes/App";
 import "./tailwind.css";
 
-function Root() {
-    return (
-        <Routes>
-            <Route path="/" element={<Home/>}/>
-        </Routes>
-    );
-}
 createRoot(document.getElementById("root")).render(
     <BrowserRouter>
-        <Root/>
+        <AuthProvider>
+            <App/>
+        </AuthProvider>
     </BrowserRouter>
 );
